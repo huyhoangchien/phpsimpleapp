@@ -55,7 +55,6 @@ end
 
 execute "set home folder for npm" do
   command "npm config set prefix '/home/php/.npm-global'"
-  mode "0755"
   action :run
 end
 
@@ -68,7 +67,7 @@ end
 # pull the project
 git "/var/app/simplephpapp" do
   repository "https://github.com/Saritasa/simplephpapp.git"
-  reference "master"
+  reference "develop"
   action :sync
   destination "/var/app/simplephpapp"
 end
