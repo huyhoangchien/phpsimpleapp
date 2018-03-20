@@ -4,7 +4,17 @@
 #
 # Huy Hoang
 
-# update & upgrade yum first
+# create php user
+user 'php user' do
+  comment 'php user'
+  uid '1001'
+  gid '1001'
+  home '/home/php'
+  shell '/bin/bash'
+  password 'aSimplePassword'
+end
+
+# update & upgrade yum 
 execute "update-upgrade" do
   command "sudo yum update -y && sudo yum upgrade -y"
   action :run
@@ -12,7 +22,7 @@ end
 
 
 # install autoconf
-execute 'intall autoconf' do
+execute 'intall development tools' do
   command 'sudo yum groupinstall "Development tools" -y'
   action :run
 end
@@ -27,7 +37,6 @@ end
 execute "install Remi repository" do
   command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
   action :run
-  returns 1
 end
 
 execute "yum install php" do
@@ -41,12 +50,27 @@ execute "install composer"  do
   action :run
 end 
 
+# create project folder
+directory '/var/app/simplephpapp' do
+  owner 'php'
+  mode '0755'
+  action :create
+end
+
+# create project folder
+directory '/var/log/php' do
+  owner 'php'
+  mode '0755'
+  action :create
+end
+
 # pull the project
 git "/var/app/simplephpapp" do
   repository "https://github.com/Saritasa/simplephpapp.git"
   reference "develop"
   action :sync
   destination "/var/app/simplephpapp"
+  user 'php'
 end
 
 # set up .env file
@@ -66,27 +90,38 @@ file '/var/app/simplephpapp/.env' do
      REDIS_PASSWORD=null
      REDIS_PORT=null'
   mode '0755'
+  owner 'php'
 end
 
-# composer install
+# install composer.json
 execute "composer install" do
   command "cd /var/app/simplephpapp && composer install"
+  user 'php'
   action :run
 end
 
 execute "install depedencies" do
   command "cd /var/app/simplephpapp && php artisan key:generate"
+  user 'php'
   action :run
 end
 
 execute "npm install" do
   command "cd /var/app/simplephpapp && npm install"
+  user 'php'
   action :run
 end
 
 # build static script
 execute "build-static-script" do
   command "cd /var/app/simplephpapp && npm run production"
+  user 'php'
   action :run
 end
 
+# run the website, port 8000
+execute "run the web" do
+  command "cd /var/app/simplephpapp/public && nohup php -S localhost:8000 > /var/log/php/run.log 2>&1"
+  user 'php'
+  action :run
+end
