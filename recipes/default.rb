@@ -56,6 +56,19 @@ directory '/var/app/simplephpapp' do
   action :create
 end
 
+# create npm folder for php user
+directory '/home/php/.npm-global' do
+  owner 'php'
+  mode '0755'
+  action :create
+end
+
+execute "set home folder for npm" do
+  command "npm config set prefix '/home/php/.npm-global'"
+  mode "0755"
+  action :run
+end
+
 # create project folder
 directory '/var/log/php' do
   owner 'php'
