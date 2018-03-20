@@ -33,10 +33,10 @@ execute 'nodejs' do
 end
 
 # install php 7.2
-#execute "install Remi repository" do
-#  command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-#  action :run
-#end
+execute "install Remi repository" do
+  command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
+  action :run
+end
 
 execute "yum install php" do
   command "sudo yum --enablerepo=remi-php72 install php php-mbstring php-pdo -y"
@@ -66,7 +66,7 @@ end
 # pull the project
 git "/var/app/simplephpapp" do
   repository "https://github.com/Saritasa/simplephpapp.git"
-  reference "develop"
+  reference "master"
   action :sync
   destination "/var/app/simplephpapp"
   user 'php'
