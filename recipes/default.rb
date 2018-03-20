@@ -67,7 +67,7 @@ end
 # pull the project
 git "/var/app/simplephpapp" do
   repository "https://github.com/Saritasa/simplephpapp.git"
-  reference "develop"
+  reference "master"
   action :sync
   destination "/var/app/simplephpapp"
   user 'php'
