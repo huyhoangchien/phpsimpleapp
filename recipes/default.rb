@@ -4,17 +4,29 @@
 #
 # Huy Hoang
 
+# create php user
+user 'php' do
+  comment 'php user'
+  uid '1001'
+  shell '/bin/bash'
+end
+
+directory '/home/php' do
+  mode '0755'
+  action :create
+  user 'php'
+end
 
 # update & upgrade yum 
 execute "update-upgrade" do
-  command "sudo yum update -y && sudo yum upgrade -y"
+  command "sudo yum update -y && sudo yum upgrade -y && sudo yum install epel-release -y"
   action :run
 end
 
 
 # install autoconf
 execute 'install development tools' do
-  command 'sudo yum groupinstall "Development tools" -y'
+  command 'sudo yum groupinstall "Development tools" -y && sudo yum install nasm libpng-devel -y'
   action :run
 end
 
@@ -25,13 +37,13 @@ execute 'nodejs' do
 end
 
 # install php 7.2
-# execute "install Remi repository" do
-#   command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-#   action :run
-# end
+#execute "install Remi repository" do
+#  command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
+#  action :run
+#end
 
 execute "yum install php" do
-  command "sudo yum --enablerepo=remi-php72 install php php-mbstring php-pdo -y"
+  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring -y"
   action :run
 end
 
@@ -41,28 +53,20 @@ execute "install composer"  do
   action :run
 end 
 
-# create project folder
+# create project folder run
+directory '/var/app' do
+  user 'php'
+  mode '0755'
+  action :create
+end
+
 directory '/var/app/simplephpapp' do
   mode '0755'
   action :create
+  user 'php'
 end
 
-# create npm folder for php user
-directory '/home/php/.npm-global' do
-  mode '0755'
-  action :create
-end
 
-execute "set home folder for npm" do
-  command "npm config set prefix '/home/php/.npm-global'"
-  action :run
-end
-
-# create project folder
-directory '/var/log/php' do
-  mode '0755'
-  action :create
-end
 
 # pull the project
 git "/var/app/simplephpapp" do
@@ -70,6 +74,7 @@ git "/var/app/simplephpapp" do
   reference "develop"
   action :sync
   destination "/var/app/simplephpapp"
+  user 'php'
 end
 
 # set up .env file
@@ -89,34 +94,70 @@ file '/var/app/simplephpapp/.env' do
      REDIS_PASSWORD=null
      REDIS_PORT=null'
   mode '0755'
+  user 'php'
+end
+
+# set up service file to start php server
+file '/etc/systemd/system/php.service' do
+  content '
+  [Unit]
+  Description=php
+  After=network.target
+
+  [Service]
+  PIDFile=/run/php.pid
+  User=php
+  ExecStartPre=/usr/bin/rm -f /run/php.pid
+  ExecStart=/usr/bin/nohup /usr/bin/php -S localhost:8000  /var/app/simplephpapp/public/index.php > /var/log/php.log 2>&1 &
+  KillSignal=SIGQUIT
+  TimeoutStopSec=5
+  KillMode=process
+  PrivateTmp=true
+
+  [Install]
+  WantedBy=multi-user.target
+  '
+  mode '0755'
 end
 
 # install composer.json
-execute "composer install" do
-  command "cd /var/app/simplephpapp && composer install"
-  action :run
+
+bash 'install composer.json' do
+  user 'php'
+  cwd '/var/app/simplephpapp'
+  environment 'HOME' => '/home/php/' 
+  code <<-EOH
+  composer update
+  composer install
+  EOH
 end
 
 execute "install depedencies" do
-  command "cd /var/app/simplephpapp && php artisan key:generate"
+  command "php artisan key:generate"
   action :run
+  user 'php'
+  cwd "/var/app/simplephpapp"
+  not_if 'grep adam /etc/passwd', :user => 'php'
 end
 
 execute "npm install" do
-  command "cd /var/app/simplephpapp && npm install"
+  command "npm install"
+  not_if 'grep adam /etc/passwd', :user => 'php' 
   environment ({'HOME' => '/home/php'})
   action :run
+  user 'php'
+  cwd "/var/app/simplephpapp"
 end
 
 # build static script
 execute "build-static-script" do
-  command "cd /var/app/simplephpapp && npm run production"
+  command "npm run production"
   action :run
+  user 'php'
+  cwd "/var/app/simplephpapp"
 end
 
 # run the website, port 8000
-execute "run the web" do
-  command "cd /var/app/simplephpapp/public && nohup php -S localhost:8000 > /var/log/php/run.log 2>&1"
-  action :run
+service "php" do
+  action :start
 end
-
