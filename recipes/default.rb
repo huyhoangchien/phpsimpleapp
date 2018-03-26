@@ -37,13 +37,18 @@ execute 'nodejs' do
 end
 
 # install php 7.2
-#execute "install Remi repository" do
-#  command "sudo rpm -Uvh http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
-#  action :run
-#end
+remote_file "/tmp/webtatic_repo_latest.rpm" do
+    source "http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
+    action :create
+end
+
+rpm_package 'remi-release-7' do
+  source "/tmp/webtatic_repo_latest.rpm"
+  action :install
+end
 
 execute "yum install php" do
-  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring -y"
+  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring php-pdo -y"
   action :run
 end
 
