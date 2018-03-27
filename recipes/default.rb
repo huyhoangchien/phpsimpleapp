@@ -48,7 +48,7 @@ rpm_package 'remi-release-7' do
 end
 
 execute "yum install php" do
-  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring php-pdo -y"
+  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring php-pdo php-fpm -y"
   action :run
 end
 
