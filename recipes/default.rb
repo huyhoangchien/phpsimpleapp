@@ -17,12 +17,30 @@ directory '/home/php' do
   user 'php'
 end
 
+# create web-server group
+group 'web-server' do
+  action :modify
+  members 'php'
+  append true
+end
+
 # update & upgrade yum 
 execute "update-upgrade" do
   command "sudo yum update -y && sudo yum upgrade -y && sudo yum install epel-release -y"
   action :run
 end
 
+# install nginx 
+yum_package 'nginx' do
+  action :install
+end
+
+# add nginx user to web-server group
+group 'web-server' do
+  action :modify
+  members 'nginx'
+  append true
+end
 
 # install autoconf
 execute 'install development tools' do
@@ -63,12 +81,14 @@ directory '/var/app' do
   user 'php'
   mode '0755'
   action :create
+  group 'web-server'
 end
 
 directory '/var/app/simplephpapp' do
   mode '0755'
   action :create
   user 'php'
+  group 'web-server'
 end
 
 
@@ -80,6 +100,8 @@ git "/var/app/simplephpapp" do
   action :sync
   destination "/var/app/simplephpapp"
   user 'php'
+  mode '0755'
+  group 'web-server'
 end
 
 # set up .env file
@@ -100,6 +122,7 @@ file '/var/app/simplephpapp/.env' do
      REDIS_PORT=null'
   mode '0755'
   user 'php'
+  group 'web-server'
 end
 
 # set up service file to start php server
@@ -123,6 +146,7 @@ file '/etc/systemd/system/php.service' do
   WantedBy=multi-user.target
   '
   mode '0755'
+  group 'web-server'
 end
 
 # install composer.json
