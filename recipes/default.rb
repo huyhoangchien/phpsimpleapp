@@ -19,7 +19,7 @@ end
 
 # create web-server group
 group 'web-server' do
-  action :modify
+  action :create
   members 'php'
   append true
 end
@@ -100,7 +100,6 @@ git "/var/app/simplephpapp" do
   action :sync
   destination "/var/app/simplephpapp"
   user 'php'
-  mode '0755'
   group 'web-server'
 end
 
