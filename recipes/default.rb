@@ -134,7 +134,6 @@ end
 
 execute "npm install" do
   command "npm install"
-  environment ({'HOME' => '/home/php'})
   action :run
   cwd "/var/app/simplephpapp"
 end
