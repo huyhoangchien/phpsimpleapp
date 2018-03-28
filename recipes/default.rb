@@ -78,17 +78,13 @@ end
 
 # create project folder run
 directory '/var/app' do
-  user 'php'
   mode '0755'
   action :create
-  group 'web-server'
 end
 
 directory '/var/app/simplephpapp' do
   mode '0755'
   action :create
-  user 'php'
-  group 'web-server'
 end
 
 
@@ -99,8 +95,6 @@ git "/var/app/simplephpapp" do
   reference "develop"
   action :sync
   destination "/var/app/simplephpapp"
-  user 'php'
-  group 'web-server'
 end
 
 # set up .env file
@@ -120,40 +114,12 @@ file '/var/app/simplephpapp/.env' do
      REDIS_PASSWORD=null
      REDIS_PORT=null'
   mode '0755'
-  user 'php'
-  group 'web-server'
-end
-
-# set up service file to start php server
-file '/etc/systemd/system/php.service' do
-  content '
-  [Unit]
-  Description=php
-  After=network.target
-
-  [Service]
-  PIDFile=/run/php.pid
-  User=php
-  ExecStartPre=/usr/bin/rm -f /run/php.pid
-  ExecStart=/usr/bin/nohup /usr/bin/php -S localhost:8000  /var/app/simplephpapp/public/index.php > /var/log/php.log 2>&1 &
-  KillSignal=SIGQUIT
-  TimeoutStopSec=5
-  KillMode=process
-  PrivateTmp=true
-
-  [Install]
-  WantedBy=multi-user.target
-  '
-  mode '0755'
-  group 'web-server'
 end
 
 # install composer.json
 
 bash 'install composer.json' do
-  user 'php'
   cwd '/var/app/simplephpapp'
-  environment 'HOME' => '/home/php/' 
   code <<-EOH
   composer update
   composer install
@@ -163,17 +129,13 @@ end
 execute "install depedencies" do
   command "php artisan key:generate"
   action :run
-  user 'php'
   cwd "/var/app/simplephpapp"
-  not_if 'grep adam /etc/passwd', :user => 'php'
 end
 
 execute "npm install" do
   command "npm install"
-  not_if 'grep adam /etc/passwd', :user => 'php' 
   environment ({'HOME' => '/home/php'})
   action :run
-  user 'php'
   cwd "/var/app/simplephpapp"
 end
 
@@ -181,11 +143,6 @@ end
 execute "build-static-script" do
   command "npm run production"
   action :run
-  user 'php'
   cwd "/var/app/simplephpapp"
 end
 
-# run the website, port 8000
-service "php" do
-  action :start
-end
