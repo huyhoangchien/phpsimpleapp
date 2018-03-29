@@ -147,7 +147,7 @@ execute "edit httpd config file" do
 end
 
 execute "set default landpage for httpd" do  
-  command 'sed -i -e \'s/\"DirectoryIndex\ index.html\"/\"DirectoryIndex\ index.php\"/g\' /etc/httpd/conf/httpd.conf'
+  command 'sed -i -e \'s/DirectoryIndex\ index.html/DirectoryIndex\ index.php/g\' /etc/httpd/conf/httpd.conf'
   action :run
 end
 
