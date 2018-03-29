@@ -146,10 +146,16 @@ execute "edit httpd config file" do
   action :run
 end
 
+execute "set default landpage for httpd" do  
+  command 'sed -i -e \'s/\"DirectoryIndex\ index.html\"/\"DirectoryIndex\ index.php\"/g\' /etc/httpd/conf/httpd.conf'
+  action :run
+end
+
 execute "add extention to php.ini file" do
   command 'echo "extension=pdo.so \n extension=pdo_mysql.so" >> /etc/php.ini'
   action :run
 end
+
 
 execute "start php72-php-fpm service" do
   command "service php72-php-fpm start"
