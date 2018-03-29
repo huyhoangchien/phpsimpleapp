@@ -41,7 +41,7 @@ rpm_package 'remi-release-7' do
 end
 
 execute "yum install php" do
-  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring php-pdo php-fpm -y"
+  command "sudo yum --enablerepo=remi-php72 install php php-xml php-mbstring php-pdo php72-php-fpm -y"
   action :run
 end
 
@@ -129,6 +129,11 @@ execute "give access to apache" do
   action :run
 end
 
+execute "give some more permission for storage logs folder" do 
+  command "sudo chcon -t httpd_sys_rw_content_t /var/www/html/storage -R"
+  action :run
+end
+
 file '/etc/httpd/conf.d/php.conf' do
   content '<FilesMatch \.php$>
     SetHandler "proxy:fcgi://127.0.0.1:9000" 
@@ -138,6 +143,11 @@ end
 
 execute "edit httpd config file" do
   command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\"/DocumentRoot \"\/var\/www\/html\/public"/g\' /etc/httpd/conf/httpd.conf'
+  action :run
+end
+
+execute "add extention to php.ini file" do
+  command 'echo "extension=pdo.so \n extension=pdo_mysql.so" >> /etc/php.ini'
   action :run
 end
 
