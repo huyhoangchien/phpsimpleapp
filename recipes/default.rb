@@ -137,6 +137,13 @@ execute "give access to apache" do
   action :run
 end
 
+file '/etc/httpd/conf.d/php.conf' do
+  content '<FilesMatch \.php$>
+    SetHandler "proxy:fcgi://127.0.0.1:9000" 
+    </FilesMatch>'
+  mode '0755'
+end
+
 execute "edit httpd config file" do
   command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\/public"/asd/g\' /etc/httpd/conf/httpd.conf'
   action :run
