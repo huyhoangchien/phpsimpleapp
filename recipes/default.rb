@@ -11,14 +11,6 @@ execute "update-upgrade" do
   action :run
 end
 
-
-# add nginx user to web-server group
-group 'web-server' do
-  action :modify
-  members 'nginx'
-  append true
-end
-
 # install autoconf
 execute 'install development tools' do
   command 'sudo yum groupinstall "Development tools" -y && sudo yum install nasm libpng-devel -y'
@@ -146,6 +138,11 @@ end
 
 execute "edit httpd config file" do
   command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\/public"/asd/g\' /etc/httpd/conf/httpd.conf'
+  action :run
+end
+
+execute "start httpd service" do
+  command 'service httpd start'
   action :run
 end
 
