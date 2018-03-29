@@ -4,25 +4,6 @@
 #
 # Huy Hoang
 
-# create php user
-user 'php' do
-  comment 'php user'
-  uid '1001'
-  shell '/bin/bash'
-end
-
-directory '/home/php' do
-  mode '0755'
-  action :create
-  user 'php'
-end
-
-# create web-server group
-group 'web-server' do
-  action :create
-  members 'php'
-  append true
-end
 
 # update & upgrade yum 
 execute "update-upgrade" do
@@ -30,10 +11,6 @@ execute "update-upgrade" do
   action :run
 end
 
-# install nginx 
-yum_package 'nginx' do
-  action :install
-end
 
 # add nginx user to web-server group
 group 'web-server' do
@@ -94,7 +71,6 @@ directory '/var/app/simplephpapp' do
 end
 
 
-
 # pull the project
 git "/var/app/simplephpapp" do
   repository "https://github.com/Saritasa/simplephpapp.git"
@@ -150,4 +126,20 @@ execute "build-static-script" do
   action :run
   cwd "/var/app/simplephpapp"
 end
+
+execute "move source to httpd folder" do
+  command "cp -rf /var/app/simplephpapp/* /usr/share/nginx/html/"
+  action :run
+end
+
+execute "give access to apache" do
+  command "chown -R apache:apache /usr/share/nginx/html/"
+  action :run
+end
+
+execute "edit httpd config file" do
+  command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\/public"/asd/g\' /etc/httpd/conf/httpd.conf'
+  action :run
+end
+
 
