@@ -119,13 +119,13 @@ execute "build-static-script" do
   cwd "/var/app/simplephpapp"
 end
 
-execute "move source to httpd folder" do
-  command "cp -rf /var/app/simplephpapp/* /usr/share/nginx/html/"
+execute "copy source to httpd folder" do
+  command "cp -rf /var/app/simplephpapp/* /var/www/html/"
   action :run
 end
 
 execute "give access to apache" do
-  command "chown -R apache:apache /usr/share/nginx/html/"
+  command "chown -R apache:apache /var/www/html/"
   action :run
 end
 
