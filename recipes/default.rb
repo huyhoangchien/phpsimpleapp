@@ -151,6 +151,12 @@ execute "add extention to php.ini file" do
   action :run
 end
 
+execute "start php72-php-fpm service" do
+  command "service php72-php-fpm start"
+  action :run
+end
+
+
 execute "start httpd service" do
   command 'service httpd start'
   action :run
