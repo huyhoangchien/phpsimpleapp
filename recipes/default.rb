@@ -137,7 +137,7 @@ file '/etc/httpd/conf.d/php.conf' do
 end
 
 execute "edit httpd config file" do
-  command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\/public"/asd/g\' /etc/httpd/conf/httpd.conf'
+  command 'sed -i -e \'s/DocumentRoot \"\/var\/www\/html\"/DocumentRoot \"\/var\/www\/html\/public"/g\' /etc/httpd/conf/httpd.conf'
   action :run
 end
 
