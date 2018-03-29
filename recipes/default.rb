@@ -54,6 +54,12 @@ execute 'nodejs' do
   action :run
 end
 
+# install yarn
+execute 'install yarn' do
+  command 'sudo npm install yarn -g'
+  action :run
+end
+
 # install php 7.2
 remote_file "/tmp/webtatic_repo_latest.rpm" do
     source "http://rpms.famillecollet.com/enterprise/remi-release-7.rpm"
@@ -132,15 +138,15 @@ execute "install depedencies" do
   cwd "/var/app/simplephpapp"
 end
 
-execute "npm install" do
-  command "npm install"
+execute "yarn install" do
+  command "yarn"
   action :run
   cwd "/var/app/simplephpapp"
 end
 
 # build static script
 execute "build-static-script" do
-  command "npm run production"
+  command "yarn run production"
   action :run
   cwd "/var/app/simplephpapp"
 end
